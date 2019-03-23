@@ -109,7 +109,7 @@ def main():
     hours, rem = divmod(totalEnd-totalStart, 3600)
     minutes, seconds = divmod(rem, 60)
     print("Total Time for " + graphFile[:-4] + ": " + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    f = open("results/" + graphFile[:-4] + "_runtime.txt", 'w')
+    f = open("results/" + os.path.basename(graphFile)[:-4] + "_runtime.txt", 'w')
     f.write("Total Time for " + graphFile[:-4] + ": " + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
     f.close()
     return 0
