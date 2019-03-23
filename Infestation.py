@@ -16,6 +16,7 @@ import multiprocessing as mp
 from ast import literal_eval
 import sys
 from pathlib import Path
+import os.path
 
 probabilities = [10, 12.5, 15, 17.5, 20]    # PROBABILITY - subject to change
 removalRate = .01   # PERCENT OF NODE REMOVAL INTERVAL - subject to change
@@ -60,7 +61,7 @@ def main():
             ## add Degree distribution metric
             # initial simulations
         print("Starting simulations for " + graphFile[:-4] + " with probability: " + str(p))
-        filename = "results/" + graphFile[:-4] + "_prob"+ str(p) + ".txt"
+        filename = "results/" + os.path.basename(graphFile)[:-4] + "_prob"+ str(p) + ".txt"
         process = mp.Process(target=simulate, args = (G, Gsize, p, q, sims, removed, filename))
         processes.append(process)
         process.start()
