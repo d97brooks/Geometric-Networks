@@ -96,7 +96,7 @@ def main():
     print("Size of largest component:" + str(largestSize))
     for p in probabilities:
         print("Starting simulations for largest component of " + graphFile[:-4] + " with probability: " + str(p))
-        filename = "results/" + graphFile[:-4] + "_prob"+ str(p) + "_largest_componenet.txt"
+        filename = "results/" + os.path.basename(graphFile)[:-4] + "_prob"+ str(p) + "_largest_componenet.txt"
         process = mp.Process(target=simulate, args = (largest, Gsize, p, q, sims, removed, filename))
         processes.append(process)
         process.start()
