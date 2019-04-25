@@ -1,8 +1,8 @@
 ##  
 # File: Infestation.py
-# Authors: Dalton Brooks, Daniel Reynoso, John Matta
+# Authors: Dalton Brooks
 # Org: Southern Illinois University Edwardsville
-# Last Date Edited: Feb 19, 2019 
+# Last Date Edited: April 25, 2019 
 ##
 
 import networkx as nx
@@ -18,11 +18,12 @@ import sys
 from pathlib import Path
 import os.path
 
-probabilities = [10, 12.5, 15, 17.5, 20]    # PROBABILITY - subject to change
-removalRate = .01   # PERCENT OF NODE REMOVAL INTERVAL - subject to change
-DIM = 2
-q = 100
-sims = 1000
+probabilities = [10, 12.5, 15, 17.5, 20]    # PROBABILITY 
+DIM = 2 # dimensions
+q = 100 # recovery
+sims = 1000 # number of simulations
+
+
 def main():
     graphFile = sys.argv[1]
     config = Path(graphFile)
@@ -41,55 +42,24 @@ def main():
     minutes, seconds = divmod(rem, 60)
     print("Graph Load Time:" + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
 
-    #removal = int(removalRate * nx.number_of_nodes(G))
+    
     Gsize = len(G.node)
-    ## calculate betweenness centrality here and use list for all removals instead of recalculating each time.
-    # print("Calculating Something for " + city[:-4] + "..." )
-    # start = time.time()
-    #btw = nx.betweenness_centrality(G) takes too long, trying degree centrality
-    # dc = nx.degree_centrality(G)  # going by max degree
-    # print("Calculated Degree Centrality.")
-    # end = time.time()
-    # hours, rem = divmod(end-start, 3600)
-    # minutes, seconds = divmod(rem, 60)
-    #print("Betweenness Centrality Execution Time:" + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    #dc = sorted(dc.items(), key=operator.itemgetter(1), reverse=True)
-    #print(str(dc))
+    # initial simulations
     for p in probabilities:
         removed = [] # removed nodes
         totalInfested = 0
-            ## add Degree distribution metric
-            # initial simulations
         print("Starting simulations for " + graphFile[:-4] + " with probability: " + str(p))
         filename = "results/" + os.path.basename(graphFile)[:-4] + "_prob"+ str(p) + ".txt"
         process = mp.Process(target=simulate, args = (G, Gsize, p, q, sims, removed, filename))
         processes.append(process)
         process.start()
-            # # removal simulations
-            # for r in range(5): ### OLD
-            #     percentRemoved = (removalRate * (r+1)) * 100
-            #     # print(" nodes removed: " + "{:.2f}".format(percentRemoved, 1) + "%")
-            #     totalInfested = 0
-            #     index = len(removed)
-            #     for remove in range(removal): ## remove top percentage of central nodes
-            #         # print("removing node - " + str(btw[remove])) printed for testing
-            #         removed.append(str(btw[index+remove][0]))
-            #         # print(str(btw[index+remove][1]))
-            #         # print(G.degree(str(btw[index+remove][0])))
-            #         G.remove_node(btw[index+remove][0])
-            #     # print("         Total nodes removed: " + str(len(removed)))
-            #     # run more sims after removal
-            #     print("    Spawning process to simulate after " + str(r+1) + "% removal")
-            #     filename = "results/" + city[:-4] + "_SimulatedAvg_prob" + str(p) + "_rem" + "{:.2f}".format(percentRemoved, 1) + ".txt"
-            #     process = mp.Process(target=simulate, args=(G, Gsize, p, q, sims, removed, filename,))
-            #     processes.append(process)
-            #     process.start()
             
-    print("Waiting for running processes to complete...") ## runnning all 
+    
+    print("Waiting for running processes to complete...")
     for proc in processes:
         proc.join()
 
-        # RUN SIMS ON LARGEST COMPENENT AS WELL
+    # RUN SIMS ON LARGEST COMPENENT AS WELL
     print("Running simulations on largest components...")
     largest = max(nx.connected_component_subgraphs(G), key=len)
     largestSize = nx.number_of_nodes(largest)
@@ -121,8 +91,7 @@ def simulate(G, size, p, q, sims, removedNodes, outputFile):
     start = time.time()
     totalInfested = 0
     for sim in range(sims):
-        # if sim%5 == 0:
-        #     print("Probability " + str(p) + " is on simulation " + str(sim))
+        
         rand = random.randint(0, size-1) # random node in graph as starting node
         while(str(rand) in removedNodes or str(rand) not in list(G.nodes())): # dont use removed nodes
             rand = random.randint(0, size-1) # random node in graph as starting node    
@@ -132,7 +101,7 @@ def simulate(G, size, p, q, sims, removedNodes, outputFile):
         for node in infested:
             data[int(node)][sim] = 1
         totalInfested += (len(infested))
-        # print("        simulation #" + str(sim+1) + " - infestation rate:" + str(len(infested)/Gsize) + "%")
+        
     print("Writing sim data to file...")
     f = open(outputFile[:-4] + "_SIMDATA.txt", "w")
     for x in data:
@@ -142,18 +111,13 @@ def simulate(G, size, p, q, sims, removedNodes, outputFile):
     print("Done writing sim data to file...")
     f.close()
     avgInfested = (totalInfested / (sims * size)) * 100
-    # print("        Probability: " + str(p) + " Removed: " + "{:.2f}".format((len(removedNodes)/size)*100, 1) +  "%   Average infestation rate: " + "{:.2f}".format(avgInfested, 1) + "%")
+    
     print("        Probability: " + str(p) + "   Average infestation rate: " + "{:.2f}".format(avgInfested, 1) + "%")
 
     end = time.time()
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
     print("            Time for p=" + str(p) + ": " + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    # f = open(outputFile, 'w')
-    # # f.write("Probability: " + str(p) + " Removed: " + "{:.2f}".format((len(removedNodes)/size)*100, 1) +  "%   Average infestation rate: " + "{:.2f}".format(avgInfested, 1) + "%\n")
-    # f.write("Probability: " + str(p) +"   Average infestation rate: " + "{:.2f}".format(avgInfested, 1) + "%\n")
-    # f.write("            Time for p=" + str(p) + ": " + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds) + "\n")
-    # f.close()
     
     return 0
 
