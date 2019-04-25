@@ -1,3 +1,9 @@
+##  
+# File: graphNormalizer.py
+# Authors: Dalton Brooks
+# Org: Southern Illinois University Edwardsville
+# Last Date Edited: April 25, 2019 
+##
 
 import networkx as nx
 import collections
